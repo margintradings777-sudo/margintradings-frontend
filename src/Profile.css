@@ -1,0 +1,286 @@
+.profile-container {
+  max-width: 800px;
+  margin: 50px auto;
+  padding: 30px;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  font-family: 'Arial', sans-serif;
+  color: #333;
+}
+
+.profile-heading {
+  text-align: center;
+  color: #007bff;
+  margin-bottom: 30px;
+  font-size: 2.5em;
+  font-weight: bold;
+}
+
+.profile-details {
+  margin-bottom: 40px;
+  border-top: 1px solid #eee;
+  padding-top: 20px;
+}
+
+.detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #eee;
+  font-size: 1.1em;
+}
+
+.detail-item strong {
+  color: #555;
+  flex-basis: 30%;
+}
+
+.detail-item span {
+  flex-basis: 65%;
+  text-align: right;
+  color: #000;
+}
+
+.view-image {
+  cursor: pointer;
+  color: #007bff;
+  margin-left: 10px;
+  font-size: 0.9em;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.view-image i {
+  margin-right: 5px;
+}
+
+.account-balance {
+  text-align: center;
+  padding: 20px;
+  background-color: #e9f7ff;
+  border-radius: 8px;
+  border: 1px solid #cce7ff;
+  margin-bottom: 30px;
+}
+
+.account-balance h3 {
+  color: #007bff;
+  margin-bottom: 15px;
+  font-size: 1.8em;
+}
+
+.balance-amount {
+  font-size: 3em;
+  font-weight: bold;
+  color: #28a745;
+  letter-spacing: 1px;
+}
+
+.withdrawal-section {
+  background-color: #f8f9fa;
+  padding: 25px;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.withdrawal-section h3 {
+  text-align: center;
+  color: #007bff;
+  margin-bottom: 20px;
+  font-size: 1.8em;
+}
+
+.withdrawal-form .form-group {
+  margin-bottom: 15px;
+}
+
+.withdrawal-form label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: bold;
+  color: #555;
+}
+
+.withdrawal-form input[type="number"] {
+  width: calc(100% - 20px);
+  padding: 10px;
+  border: 1px solid #ced4da;
+  border-radius: 5px;
+  font-size: 1em;
+}
+
+.withdrawal-form button.btn {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 5px;
+  background-color: #28a745;
+  color: white;
+  font-size: 1.1em;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.withdrawal-form button.btn:hover {
+  background-color: #218838;
+}
+
+.error-message {
+  color: #dc3545;
+  text-align: center;
+  font-size: 1.2em;
+  margin-top: 20px;
+}
+
+.success-message {
+  color: #28a745;
+  text-align: center;
+  font-size: 1.2em;
+  margin-top: 20px;
+}
+
+/* Image Modal Styles */
+.image-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.image-modal-content {
+  background: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  position: relative;
+  max-width: 90%;
+  max-height: 90%;
+  overflow: auto;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.image-modal-content .close-button {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  font-size: 2em;
+  cursor: pointer;
+  color: #333;
+}
+
+.modal-image {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+
+/* Deposit Details Section */
+.deposit-details-section {
+  background-color: #f8f9fa;
+  padding: 25px;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+  margin-bottom: 30px;
+}
+
+.deposit-details-section h3 {
+  text-align: center;
+  color: #007bff;
+  margin-bottom: 20px;
+  font-size: 1.8em;
+}
+
+.deposit-details-content .detail-item {
+  justify-content: flex-start;
+}
+
+.deposit-details-content .detail-item strong {
+  flex-basis: 40%;
+  text-align: left;
+}
+
+.deposit-details-content .detail-item span {
+  flex-basis: 55%;
+  text-align: left;
+}
+
+.qr-code-section {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.qr-code-section strong {
+  display: block;
+  margin-bottom: 10px;
+  color: #555;
+}
+
+.qr-image {
+  max-width: 200px;
+  height: auto;
+  border: 1px solid #eee;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .profile-container {
+    margin: 20px;
+    padding: 20px;
+  }
+
+  .profile-heading {
+    font-size: 2em;
+  }
+
+  .detail-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .detail-item strong,
+  .detail-item span {
+    flex-basis: auto;
+    width: 100%;
+    text-align: left;
+  }
+
+  .detail-item span {
+    margin-top: 5px;
+    padding-left: 10px; /* Indent the value slightly */
+  }
+
+  .balance-amount {
+    font-size: 2.5em;
+  }
+
+  .withdrawal-form input[type="number"] {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .profile-container {
+    margin: 10px;
+    padding: 15px;
+  }
+
+  .profile-heading {
+    font-size: 1.8em;
+  }
+
+  .balance-amount {
+    font-size: 2em;
+  }
+}

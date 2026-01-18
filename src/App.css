@@ -1,0 +1,192 @@
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: #fff;
+  padding: 30px;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  position: relative;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.close-button {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  height: 30px;
+  width: 30px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #333;
+}
+
+.error-message {
+  color: red;
+  font-size: 12px;
+  margin-top: 5px;
+  margin-bottom: 10px;
+}
+
+.modal-content h2 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: #333;
+  text-align: center;
+}
+
+.modal-content .form-group {
+  margin-bottom: 15px;
+}
+
+.modal-content label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: #555;
+}
+
+.modal-content input[type="text"],
+.modal-content input[type="email"],
+.modal-content input[type="password"],
+.modal-content input[type="tel"],
+.modal-content input[type="number"],
+.modal-content input[type="file"] {
+  width: calc(100% - 20px);
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+.modal-content input[type="file"] {
+  padding: 5px;
+}
+
+.modal-content .cta-buttonFUNDS {
+  display: inline-block;
+  background-color: #007bff;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  margin-top: 10px;
+  margin-right: 10px;
+  transition: background-color 0.3s ease;
+}
+
+.modal-content .cta-buttonFUNDS:hover {
+  background-color: #0056b3;
+}
+
+.modal-content .cta-buttonFUNDS:last-child {
+  margin-right: 0;
+}
+
+/* Basic styling for the existing buttons to match */
+.btn.green {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+}
+
+.btn.green:hover {
+  background-color: #218838;
+}
+
+.btn.outline {
+  background-color: transparent;
+  color: #007bff;
+  border: 1px solid #007bff;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.3s ease;
+}
+
+.btn.outline:hover {
+  background-color: #007bff;
+  color: white;
+}
+
+/* App Store Buttons */
+.app-buttons {
+  display: flex;
+  gap: 15px;
+  margin-top: 30px;
+  justify-content: center; /* Center buttons on smaller screens */
+}
+
+.app-button {
+  display: flex;
+  align-items: center;
+  padding: 12px 25px;
+  border-radius: 8px;
+  font-size: 1.1em;
+  font-weight: bold;
+  text-decoration: none;
+  color: white;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.app-button i {
+  margin-right: 10px;
+  font-size: 1.4em;
+}
+
+.app-button.apple-store {
+  background-color: #000;
+}
+
+.app-button.apple-store:hover {
+  background-color: #333;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+}
+
+.app-button.play-store {
+  background-color: #4CAF50;
+}
+
+.app-button.play-store:hover {
+  background-color: #45a049;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* Responsive adjustments for app buttons */
+@media (max-width: 768px) {
+  .app-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .app-button {
+    width: 80%; /* Make buttons take more width on small screens */
+    justify-content: center;
+  }
+}
