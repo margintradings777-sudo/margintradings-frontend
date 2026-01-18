@@ -4,7 +4,8 @@ import react from '@vitejs/plugin-react'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  base: "./", // ✅ ensures correct asset paths on Netlify
   server: {
-    port: 3001, // Set your desired port here
+    port: 3001, // Optional for local dev
   },
 })
