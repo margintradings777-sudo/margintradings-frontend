@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
 function Home() {
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
 
-  // ✅ FIXED LOGIN STATE
+  // 🔥 FIXED: Django uses username + password
   const [loginForm, setLoginForm] = useState({
     username: "",
     password: "",
@@ -15,32 +17,39 @@ function Home() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userName, setUserName] = useState("");
 
+  // -------------------------------
+  // Restore login from localStorage
+  // -------------------------------
   useEffect(() => {
-    const storedUserName = localStorage.getItem("userName");
-    const storedIsLoggedIn = localStorage.getItem("isLoggedIn");
+    const storedLogin = localStorage.getItem("isLoggedIn");
+    const storedUser = localStorage.getItem("userName");
 
-    if (storedIsLoggedIn === "true") {
+    if (storedLogin === "true") {
       setIsLoggedIn(true);
-      setUserName(storedUserName);
+      setUserName(storedUser || "");
     }
   }, []);
 
+  // -------------------------------
+  // Input change
+  // -------------------------------
   const handleLoginChange = (e) => {
-    const { name, value } = e.target;
-    setLoginForm((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setLoginForm({
+      ...loginForm,
+      [e.target.name]: e.target.value,
+    });
   };
 
-  // ✅ FIXED LOGIN SUBMIT
+  // -------------------------------
+  // LOGIN SUBMIT (FIXED)
+  // -------------------------------
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
     setLoginError(null);
 
     try {
       const res = await axios.post(
-        `${import.meta.env.VITE_API_BASE_URL}/auth/login/`,
+        `${API_BASE}/auth/login/`,
         {
           username: loginForm.username,
           password: loginForm.password,
@@ -48,16 +57,27 @@ function Home() {
         { withCredentials: true }
       );
 
-      localStorage.setItem("userName", res.data.username || loginForm.username);
-      localStorage.setItem("userId", res.data.user_id);
+      // ✅ success
       localStorage.setItem("isLoggedIn", "true");
+      localStorage.setItem("userName", res.data.username || loginForm.username);
+      localStorage.setItem("userId", res.data.user_id || "");
 
       setIsLoggedIn(true);
       setUserName(res.data.username || loginForm.username);
       setShowLoginModal(false);
     } catch (err) {
       setLoginError("Invalid username or password");
+      localStorage.setItem("isLoggedIn", "false");
     }
+  };
+
+  // -------------------------------
+  // LOGOUT
+  // -------------------------------
+  const handleLogout = () => {
+    localStorage.clear();
+    setIsLoggedIn(false);
+    setUserName("");
   };
 
   return (
@@ -65,66 +85,99 @@ function Home() {
       {/* ================= HEADER ================= */}
       <header className="navbar">
         <div className="logo">
-          <img src="logo.png" alt="Logo" />
+          <img src="logo.png" alt="Margin Traders" />
         </div>
 
         <div className="auth">
           {isLoggedIn ? (
-            <a href="#/profile">Welcome, {userName}</a>
+            <>
+              <span className="welcome">Welcome, {userName}</span>
+              <button className="btn outline" onClick={handleLogout}>
+                Logout
+              </button>
+            </>
           ) : (
             <>
-              <button onClick={() => setShowRegisterModal(true)}>
-                OPEN ACCOUNT
+              <button
+                className="btn outline"
+                onClick={() => setShowLoginModal(true)}
+              >
+                LOG IN
               </button>
-              <button onClick={() => setShowLoginModal(true)}>LOG IN</button>
             </>
           )}
         </div>
       </header>
+
+      {/* ================= HERO ================= */}
+      <section className="hero">
+        <div className="hero-left">
+          <h1>
+            DEPOSITS <em>AND</em>
+            <br />
+            WITHDRAWALS
+          </h1>
+          <p>Fast, convenient and secure transactions.</p>
+        </div>
+
+        <div className="hero-right">
+          <img
+            src="https://eu-images.contentstack.com/v3/assets/blt73dfd92ee49f59a6/blt842b91c2f0323bb8/6780412520a74477d5c611e0/Image.webp"
+            alt="Hero"
+          />
+        </div>
+      </section>
 
       {/* ================= LOGIN MODAL ================= */}
       {showLoginModal && (
         <div className="modal-overlay">
           <div className="modal-content">
             <h2>Login</h2>
-            <button onClick={() => setShowLoginModal(false)}>×</button>
 
-            {loginError && <p style={{ color: "red" }}>{loginError}</p>}
+            <button
+              className="close-button"
+              onClick={() => setShowLoginModal(false)}
+            >
+              &times;
+            </button>
+
+            {loginError && <p className="error-message">{loginError}</p>}
 
             <form onSubmit={handleLoginSubmit}>
-              {/* ✅ username */}
-              <input
-                type="text"
-                name="username"
-                placeholder="Username"
-                value={loginForm.username}
-                onChange={handleLoginChange}
-                required
-              />
+              <div className="form-group">
+                <label>Username</label>
+                <input
+                  type="text"
+                  name="username"
+                  value={loginForm.username}
+                  onChange={handleLoginChange}
+                  required
+                />
+              </div>
 
-              {/* ✅ password */}
-              <input
-                type="password"
-                name="password"
-                placeholder="Password"
-                value={loginForm.password}
-                onChange={handleLoginChange}
-                required
-              />
+              <div className="form-group">
+                <label>Password</label>
+                <input
+                  type="password"
+                  name="password"
+                  value={loginForm.password}
+                  onChange={handleLoginChange}
+                  required
+                />
+              </div>
 
-              <button type="submit">Login</button>
+              <button type="submit" className="cta-buttonFUNDS">
+                Login
+              </button>
             </form>
           </div>
         </div>
       )}
 
-      {/* ================= HERO (UNCHANGED UI) ================= */}
-      <section className="hero">
-        <h1>DEPOSITS AND WITHDRAWALS</h1>
-        <p>Fast, convenient and secure.</p>
-      </section>
-
-      {/* बाकी पूरा UI SAME रहेगा */}
+      {/* ================= FOOTER (SAFE PLACEHOLDER) ================= */}
+      <footer className="footer">
+        <p>© 2026 Margin Tradings. All rights reserved.</p>
+      </footer>
     </div>
   );
 }
