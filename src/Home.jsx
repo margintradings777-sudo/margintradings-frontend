@@ -389,8 +389,8 @@ function Home() {
               <div className="form-group">
                 <label>Email</label>
                 <input
-                  type="email"
-                  name="Email"
+                  type="text"
+                  name="UserName"
                   value={loginForm.Email}
                   onChange={handleLoginChange}
                   required
