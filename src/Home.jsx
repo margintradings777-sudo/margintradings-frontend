@@ -390,7 +390,8 @@ function Home() {
                 <label>Email</label>
                 <input
                   type="text"
-                  name="UserName"
+                  name="Email"
+                  placeholder="Username"
                   value={loginForm.Email}
                   onChange={handleLoginChange}
                   required
@@ -401,6 +402,7 @@ function Home() {
                 <input
                   type="password"
                   name="Password"
+                  placeholder="Password"
                   value={loginForm.Password}
                   onChange={handleLoginChange}
                   required
