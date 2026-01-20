@@ -16,7 +16,7 @@ const Profile = () => {
     }
 
     api
-      .get(`/arkbackend/auth/profile/${userId}/`)
+      .get(`/auth/profile/${userId}/`)
       .then((res) => setUserDetails(res.data))
       .catch(() => setError("Failed to load profile"));
   }, []);
@@ -34,7 +34,7 @@ const Profile = () => {
       <h2>Profile</h2>
       <p>Name: {userDetails.Name}</p>
       <p>Email: {userDetails.Email}</p>
-      <p>Phone: {userDetails.Phone}</p>
+      <p>Phone: {userDetails.Phone || "N/A"}</p>
 
       <button onClick={handleLogout}>Logout</button>
     </div>
@@ -42,4 +42,3 @@ const Profile = () => {
 };
 
 export default Profile;
-
