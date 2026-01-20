@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import api from "./api";
 
 function Home() {
-  const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
 
   const [loginForm, setLoginForm] = useState({
@@ -52,7 +51,8 @@ function Home() {
 
   return (
     <>
-      <header>
+      {/* HEADER */}
+      <header style={{ padding: "20px", borderBottom: "1px solid #ddd" }}>
         {isLoggedIn ? (
           <h3>Welcome, {userName}</h3>
         ) : (
@@ -60,8 +60,23 @@ function Home() {
         )}
       </header>
 
+      {/* MAIN CONTENT */}
+      <main style={{ padding: "20px" }}>
+        <h1>Margin Tradings</h1>
+        <p>
+          Trade smarter. Manage your margin positions securely and efficiently.
+        </p>
+
+        {!isLoggedIn && (
+          <p style={{ color: "#666" }}>
+            Please login to access your dashboard.
+          </p>
+        )}
+      </main>
+
+      {/* LOGIN MODAL */}
       {showLoginModal && (
-        <div>
+        <div style={{ padding: "20px", border: "1px solid #ccc" }}>
           <form onSubmit={handleLoginSubmit}>
             <input
               name="email"
@@ -70,6 +85,8 @@ function Home() {
               onChange={handleLoginChange}
               required
             />
+            <br />
+
             <input
               name="password"
               type="password"
@@ -77,8 +94,13 @@ function Home() {
               onChange={handleLoginChange}
               required
             />
+            <br />
+
             <button type="submit">Login</button>
-            {loginError && <p>{loginError}</p>}
+
+            {loginError && (
+              <p style={{ color: "red" }}>{loginError}</p>
+            )}
           </form>
         </div>
       )}
