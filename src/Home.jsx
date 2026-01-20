@@ -87,31 +87,39 @@ function Home() {
   };
 
   const handleLoginSubmit = async (e) => {
-    e.preventDefault();
-    setLoginError(null);
+  e.preventDefault();
+  setLoginError(null);
 
-  
-    try {
-      const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/auth/login/`, loginForm);
-      console.log("Login successful:", response.data);
-      setIsLoggedIn(true);
-      setUserName(response.data.name); // Assuming the API returns a Name or Email
-      
-      // Store user details in localStorage
-      localStorage.setItem('userName', response.data.name);
-      localStorage.setItem('userId', response.data.user_id);
-      localStorage.setItem('isLoggedIn', true);
-      localStorage.setItem('userPassword', loginForm.Password );
-      
-      setShowLoginModal(false);
+  try {
+    const response = await axios.post(
+      `${import.meta.env.VITE_API_BASE_URL}/auth/login/`,
+      {
+        username: loginForm.Email,   // 🔥 IMPORTANT
+        password: loginForm.Password // 🔥 IMPORTANT
+      },
+      {
+        withCredentials: true, // session ke liye zaroori
+      }
+    );
 
-    } catch (error) {
-      console.error("Login failed:", error.response ? error.response.data : error.message);
-      setLoginError(error.response ? error.response.data.message || "Login failed. Please check your credentials." : "Login failed. Please check your credentials.");
-      localStorage.setItem('isLoggedIn', false);
+    console.log("Login successful:", response.data);
 
-    }
-  };
+    setIsLoggedIn(true);
+    setUserName(response.data.username || loginForm.Email);
+
+    localStorage.setItem("userName", response.data.username || loginForm.Email);
+    localStorage.setItem("userId", response.data.user_id || "");
+    localStorage.setItem("isLoggedIn", "true");
+
+    setShowLoginModal(false);
+
+  } catch (error) {
+    console.error("Login failed:", error.response?.data || error.message);
+    setLoginError("Invalid username or password");
+    localStorage.setItem("isLoggedIn", "false");
+  }
+};
+
 
   const handleRegisterSubmit = async (e) => {
     e.preventDefault();
