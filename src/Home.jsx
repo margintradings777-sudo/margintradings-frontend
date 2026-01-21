@@ -92,10 +92,6 @@ function Home() {
     e.preventDefault();
     setLoginError(null);
 
-  
-    const handleLoginSubmit = async (e) => {
-  e.preventDefault();
-  setLoginError(null);
 
   try {
     const response = await axios.post(
