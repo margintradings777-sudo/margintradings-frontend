@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 function Home() {
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const navigate = useNavigate();
   const [loginForm, setLoginForm] = useState({
     Email: "",
     Password: "",
@@ -91,27 +93,35 @@ function Home() {
     setLoginError(null);
 
   
-    try {
-      const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/auth/login/`, loginForm);
-      console.log("Login successful:", response.data);
-      setIsLoggedIn(true);
-      setUserName(response.data.name); // Assuming the API returns a Name or Email
-      
-      // Store user details in localStorage
-      localStorage.setItem('userName', response.data.name);
-      localStorage.setItem('userId', response.data.user_id);
-      localStorage.setItem('isLoggedIn', true);
-      localStorage.setItem('userPassword', loginForm.Password );
-      
-      setShowLoginModal(false);
+    const handleLoginSubmit = async (e) => {
+  e.preventDefault();
+  setLoginError(null);
 
-    } catch (error) {
-      console.error("Login failed:", error.response ? error.response.data : error.message);
-      setLoginError(error.response ? error.response.data.message || "Login failed. Please check your credentials." : "Login failed. Please check your credentials.");
-      localStorage.setItem('isLoggedIn', false);
+  try {
+    const response = await axios.post(
+      `${import.meta.env.VITE_API_BASE_URL}/auth/login/`,
+      loginForm
+    );
 
-    }
-  };
+    console.log("Login successful:", response.data);
+
+    setIsLoggedIn(true);
+    setUserName(response.data.name);
+
+    localStorage.setItem("userName", response.data.name);
+    localStorage.setItem("userId", response.data.user_id);
+    localStorage.setItem("isLoggedIn", "true");
+
+    setShowLoginModal(false);
+
+    // 👇👇👇 THIS PART IS CALLED "LOGIN SUCCESS BLOCK"
+    // (because it runs ONLY when login is successful)
+
+  } catch (error) {
+    console.error("Login failed");
+    setLoginError("Login failed. Please check your credentials.");
+  }
+};
 
   const handleRegisterSubmit = async (e) => {
     e.preventDefault();
