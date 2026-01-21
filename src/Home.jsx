@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 function Home() {
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const navigate = useNavigate();
+
 
   const [loginForm, setLoginForm] = useState({
     Email: "",
@@ -77,6 +80,9 @@ function Home() {
       localStorage.setItem("isLoggedIn", "true");
 
       setShowLoginModal(false);
+
+      navigate("/profile");
+  
     } catch (err) {
       setLoginError("Login failed. Please check your credentials.");
       localStorage.setItem("isLoggedIn", "false");
