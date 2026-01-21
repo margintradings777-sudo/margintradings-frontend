@@ -113,6 +113,7 @@ function Home() {
     localStorage.setItem("isLoggedIn", "true");
 
     setShowLoginModal(false);
+    navigate("/profile");
 
     // 👇👇👇 THIS PART IS CALLED "LOGIN SUCCESS BLOCK"
     // (because it runs ONLY when login is successful)
