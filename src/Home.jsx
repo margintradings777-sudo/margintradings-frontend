@@ -1,13 +1,16 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
+/**
+ * Backend base URL
+ * example: https://margintradings-backend.onrender.com
+ */
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 function Home() {
-  const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
 
-  // 🔥 FIXED: Django uses username + password
+  // Django default auth = username + password
   const [loginForm, setLoginForm] = useState({
     username: "",
     password: "",
@@ -18,30 +21,31 @@ function Home() {
   const [userName, setUserName] = useState("");
 
   // -------------------------------
-  // Restore login from localStorage
+  // Restore session
   // -------------------------------
   useEffect(() => {
-    const storedLogin = localStorage.getItem("isLoggedIn");
-    const storedUser = localStorage.getItem("userName");
+    const loggedIn = localStorage.getItem("isLoggedIn");
+    const name = localStorage.getItem("userName");
 
-    if (storedLogin === "true") {
+    if (loggedIn === "true") {
       setIsLoggedIn(true);
-      setUserName(storedUser || "");
+      setUserName(name || "");
     }
   }, []);
 
   // -------------------------------
-  // Input change
+  // Input handler
   // -------------------------------
   const handleLoginChange = (e) => {
-    setLoginForm({
-      ...loginForm,
-      [e.target.name]: e.target.value,
-    });
+    const { name, value } = e.target;
+    setLoginForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   // -------------------------------
-  // LOGIN SUBMIT (FIXED)
+  // LOGIN
   // -------------------------------
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
@@ -54,16 +58,20 @@ function Home() {
           username: loginForm.username,
           password: loginForm.password,
         },
-        { withCredentials: true }
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
       );
 
-      // ✅ success
+      // success
       localStorage.setItem("isLoggedIn", "true");
-      localStorage.setItem("userName", res.data.username || loginForm.username);
-      localStorage.setItem("userId", res.data.user_id || "");
+      localStorage.setItem("userId", res.data.user_id);
+      localStorage.setItem("userName", res.data.username);
 
       setIsLoggedIn(true);
-      setUserName(res.data.username || loginForm.username);
+      setUserName(res.data.username);
       setShowLoginModal(false);
     } catch (err) {
       setLoginError("Invalid username or password");
@@ -85,7 +93,7 @@ function Home() {
       {/* ================= HEADER ================= */}
       <header className="navbar">
         <div className="logo">
-          <img src="logo.png" alt="Margin Traders" />
+          <img src="/logo.png" alt="Margin Tradings" />
         </div>
 
         <div className="auth">
@@ -97,14 +105,12 @@ function Home() {
               </button>
             </>
           ) : (
-            <>
-              <button
-                className="btn outline"
-                onClick={() => setShowLoginModal(true)}
-              >
-                LOG IN
-              </button>
-            </>
+            <button
+              className="btn outline"
+              onClick={() => setShowLoginModal(true)}
+            >
+              LOG IN
+            </button>
           )}
         </div>
       </header>
@@ -117,7 +123,7 @@ function Home() {
             <br />
             WITHDRAWALS
           </h1>
-          <p>Fast, convenient and secure transactions.</p>
+          <p>Fast, secure and reliable transactions.</p>
         </div>
 
         <div className="hero-right">
@@ -141,7 +147,9 @@ function Home() {
               &times;
             </button>
 
-            {loginError && <p className="error-message">{loginError}</p>}
+            {loginError && (
+              <p className="error-message">{loginError}</p>
+            )}
 
             <form onSubmit={handleLoginSubmit}>
               <div className="form-group">
@@ -174,7 +182,7 @@ function Home() {
         </div>
       )}
 
-      {/* ================= FOOTER (SAFE PLACEHOLDER) ================= */}
+      {/* ================= FOOTER ================= */}
       <footer className="footer">
         <p>© 2026 Margin Tradings. All rights reserved.</p>
       </footer>
