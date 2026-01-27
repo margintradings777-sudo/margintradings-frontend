@@ -95,11 +95,7 @@ function Home() {
       const response = await axios.post(
   `${import.meta.env.VITE_API_BASE_URL}/login/`,
   loginform,
-    },
-  }
 );
-
-   console.log("Login success:", response.data);
       
       setIsLoggedIn(true);
       setUserName(response.data.name); // Assuming the API returns a Name or Email
