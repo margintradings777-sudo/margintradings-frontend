@@ -94,7 +94,7 @@ function Home() {
     try {
       const response = await axios.post(
   `${import.meta.env.VITE_API_BASE_URL}/auth/login/`,
-  loginform,
+  loginForm,
         { headers: { "Content-Type": "application/json" } }
     );
       
