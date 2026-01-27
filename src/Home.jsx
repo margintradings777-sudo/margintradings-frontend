@@ -58,7 +58,7 @@ function Home() {
   };
   const additem = () => {
     axios
-      .post(`${import.meta.env.VITE_API_BASE_URL}/apis/v1/withdrawal`, item)
+      .post(`${import.meta.env.VITE_API_BASE_URL}/apis/v1/withdrawal/`, item)
       .then(() => {
         getdata();
       });
@@ -66,7 +66,7 @@ function Home() {
 
   const getdata = () => {
     axios
-      .get(`${import.meta.env.VITE_API_BASE_URL}/apis/v1/withdrawal`)
+      .get(`${import.meta.env.VITE_API_BASE_URL}/apis/v1/withdrawal/`)
       .then((res) => SetList(res.data || []));
   };
 
@@ -93,10 +93,14 @@ function Home() {
   
     try {
       const response = await axios.post(
-  `${import.meta.env.VITE_API_BASE_URL}/auth/register/`,
-  formData
+  `${import.meta.env.VITE_API_BASE_URL}/login/`,
+  loginform,
+    },
+  }
 );
 
+   console.log("Login success:", response.data);
+      
       setIsLoggedIn(true);
       setUserName(response.data.name); // Assuming the API returns a Name or Email
       
