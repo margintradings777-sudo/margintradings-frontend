@@ -12,31 +12,10 @@ const Profile = () => {
 
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const userId = localStorage.getItem("userId");
-    if (!userId) {
-      navigate("/");
-      return;
-    }
-
-    // 1) Profile
-    api
-      .get(`/auth/profile/${userId}/`)
-      .then((res) => setProfileData(res.data))
-      .catch(() => setError("Failed to load profile"));
-
-    // 2) Deposit Account Details (optional endpoint)
-    api
-      .get(`/auth/deposit-account-details/`)
-      .then((res) => setDepositDetails(res.data))
-      .catch(() => {
-        // optional hai; fail ho to UI still chalega
-      });
-  }, [navigate]);
-
-  const handleLogout = () => {
-    localStorage.clear();
-    navigate("/");
+  // helpers
+  const safe = (v) => {
+    if (v === null || v === undefined || v === "") return "—";
+    return String(v);
   };
 
   const openImageModal = (imageUrl) => {
@@ -50,8 +29,100 @@ const Profile = () => {
     setSelectedImage("");
   };
 
+  useEffect(() => {
+    const userId = localStorage.getItem("userId");
+    const userPassword = localStorage.getItem("userPassword");
+
+    if (!userId) {
+      navigate("/");
+      return;
+    }
+
+    if (!userPassword) {
+      // password query param required by backend profile view
+      setError("Session expired. Please login again.");
+      return;
+    }
+
+    // ✅ 1) Profile (correct endpoint + password query param)
+    api
+      .get(`/apis/v1/profile/${userId}/`, {
+        params: { password: userPassword },
+      })
+      .then((res) => setProfileData(res.data))
+      .catch((err) => {
+        console.log("Profile error:", err);
+        setError("Failed to load profile");
+      });
+
+    // ✅ 2) Deposit Account Details (correct endpoint)
+    api
+      .get(`/apis/v1/deposit-account-details/`)
+      .then((res) => setDepositDetails(res.data))
+      .catch((err) => {
+        console.log("Deposit details error:", err);
+        // optional endpoint; ignore fail
+      });
+  }, [navigate]);
+
+  const handleLogout = () => {
+    localStorage.removeItem("userName");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("userPassword");
+    localStorage.removeItem("isLoggedIn");
+    navigate("/");
+  };
+
   if (error) return <p style={{ padding: 16 }}>{error}</p>;
   if (!profileData) return <p style={{ padding: 16 }}>Loading...</p>;
+
+  // ✅ profile field mapping (backend me naming change hua hai multiple times, isliye fallback)
+  const name = profileData?.Name || profileData?.name;
+  const email = profileData?.Email || profileData?.email;
+  const phone = profileData?.Phone || profileData?.phone;
+
+  const pan =
+    profileData?.PAN_No ||
+    profileData?.Pan ||
+    profileData?.PAN ||
+    profileData?.pan;
+
+  const panImage =
+    profileData?.PAN_Image ||
+    profileData?.Pan_card_Image ||
+    profileData?.pan_image;
+
+  const accountNo =
+    profileData?.Account_No ||
+    profileData?.AccountNumber ||
+    profileData?.account_no;
+
+  const ifsc =
+    profileData?.IFSC_code ||
+    profileData?.IFSC_code ||
+    profileData?.IFSC ||
+    profileData?.ifsc;
+
+  const bankDoc =
+    profileData?.Bank_Document ||
+    profileData?.Bank_Document ||
+    profileData?.Bank_Statement;
+
+  const balanceRaw = profileData?.Account_Balance ?? 0;
+
+  // ✅ deposit account details mapping (fallback)
+  const depBankName =
+    depositDetails?.BankName || depositDetails?.Bank_Name || depositDetails?.bank_name;
+  const depHolderName =
+    depositDetails?.HolderName || depositDetails?.Holder_Name || depositDetails?.holder_name;
+  const depAccountNo =
+    depositDetails?.AccountNumber || depositDetails?.Account_No || depositDetails?.account_no;
+  const depIFSC =
+    depositDetails?.IFSC ||
+    depositDetails?.IFSC_code ||
+    depositDetails?.IFSC_code ||
+    depositDetails?.ifsc;
+  const depQR = depositDetails?.QR || depositDetails?.qr;
 
   return (
     <div style={styles.page}>
@@ -60,30 +131,30 @@ const Profile = () => {
 
         <div style={styles.row}>
           <div style={styles.label}>Name:</div>
-          <div style={styles.value}>{profileData.Name || "—"}</div>
+          <div style={styles.value}>{safe(name)}</div>
         </div>
 
         <div style={styles.row}>
           <div style={styles.label}>Email:</div>
-          <div style={styles.value}>{profileData.Email || "—"}</div>
+          <div style={styles.value}>{safe(email)}</div>
         </div>
 
         <div style={styles.row}>
           <div style={styles.label}>Phone:</div>
-          <div style={styles.value}>{profileData.Phone || "—"}</div>
+          <div style={styles.value}>{safe(phone)}</div>
         </div>
 
         <div style={styles.row}>
           <div style={styles.label}>PAN:</div>
-          <div style={styles.value}>{profileData.Pan || "—"}</div>
+          <div style={styles.value}>{safe(pan)}</div>
         </div>
 
         <div style={styles.row}>
-          <div style={styles.label}>PAN Image:</div>
+          <div style={styles.label}>PAN_Image:</div>
           <button
             style={styles.viewBtn}
-            onClick={() => openImageModal(profileData.Pan_card_Image)}
-            disabled={!profileData.Pan_card_Image}
+            onClick={() => openImageModal(pan_Image)}
+            disabled={!pan_Image}
           >
             👁 View
           </button>
@@ -91,22 +162,20 @@ const Profile = () => {
 
         <div style={styles.row}>
           <div style={styles.label}>Account No:</div>
-          <div style={styles.value}>{profileData.Account_No || "—"}</div>
+          <div style={styles.value}>{safe(accountNo)}</div>
         </div>
 
         <div style={styles.row}>
           <div style={styles.label}>IFSC Code:</div>
-          <div style={styles.value}>{profileData.IFSC_code || "—"}</div>
+          <div style={styles.value}>{safe(ifsc)}</div>
         </div>
 
         <div style={styles.row}>
           <div style={styles.label}>Bank Statement/Cheque:</div>
           <button
             style={styles.viewBtn}
-            onClick={() =>
-              openImageModal(profileData.Cancel_cheque_or_bank_statement)
-            }
-            disabled={!profileData.Cancel_cheque_or_bank_statement}
+            onClick={() => openImageModal(bankDoc)}
+            disabled={!bankDoc}
           >
             👁 View
           </button>
@@ -121,47 +190,45 @@ const Profile = () => {
       <div style={styles.balanceCard}>
         <div style={styles.balanceTitle}>Account Balance</div>
         <div style={styles.balanceValue}>
-          Rs.{Number(profileData.Account_Balance || 0).toFixed(2)}
+          Rs.{Number(balanceRaw || 0).toFixed(2)}
         </div>
       </div>
 
       {/* Deposit Details Card */}
-      {depositDetails && (
-        <div style={styles.depositCard}>
-          <div style={styles.depositTitle}>Deposit Details</div>
+      <div style={styles.depositCard}>
+        <div style={styles.depositTitle}>Deposit Details</div>
 
-          <div style={styles.row}>
-            <div style={styles.label}>Bank Name:</div>
-            <div style={styles.value}>{depositDetails.Bank_Name || "—"}</div>
-          </div>
-
-          <div style={styles.row}>
-            <div style={styles.label}>Holder Name:</div>
-            <div style={styles.value}>{depositDetails.Holder_Name || "—"}</div>
-          </div>
-
-          <div style={styles.row}>
-            <div style={styles.label}>Account No:</div>
-            <div style={styles.value}>{depositDetails.Account_No || "—"}</div>
-          </div>
-
-          <div style={styles.row}>
-            <div style={styles.label}>IFSC Code:</div>
-            <div style={styles.value}>{depositDetails.IFSC || "—"}</div>
-          </div>
-
-          <div style={styles.row}>
-            <div style={styles.label}>QR:</div>
-            <button
-              style={styles.viewBtn}
-              onClick={() => openImageModal(depositDetails.QR)}
-              disabled={!depositDetails.QR}
-            >
-              👁 View
-            </button>
-          </div>
+        <div style={styles.row}>
+          <div style={styles.label}>Bank Name:</div>
+          <div style={styles.value}>{safe(depBankName)}</div>
         </div>
-      )}
+
+        <div style={styles.row}>
+          <div style={styles.label}>Holder Name:</div>
+          <div style={styles.value}>{safe(depHolderName)}</div>
+        </div>
+
+        <div style={styles.row}>
+          <div style={styles.label}>Account No:</div>
+          <div style={styles.value}>{safe(depAccountNo)}</div>
+        </div>
+
+        <div style={styles.row}>
+          <div style={styles.label}>IFSC Code:</div>
+          <div style={styles.value}>{safe(depIFSC)}</div>
+        </div>
+
+        <div style={styles.row}>
+          <div style={styles.label}>QR:</div>
+          <button
+            style={styles.viewBtn}
+            onClick={() => openImageModal(depQR)}
+            disabled={!depQR}
+          >
+            👁 View
+          </button>
+        </div>
+      </div>
 
       {/* Image Modal */}
       {showImageModal && (
@@ -240,7 +307,12 @@ const styles = {
     border: "1px solid #d6ecff",
   },
   balanceTitle: { fontSize: 26, fontWeight: 700, color: "#1e88e5" },
-  balanceValue: { fontSize: 34, fontWeight: 800, color: "#22a447", marginTop: 10 },
+  balanceValue: {
+    fontSize: 34,
+    fontWeight: 800,
+    color: "#22a447",
+    marginTop: 10,
+  },
 
   depositCard: {
     background: "#fff",
