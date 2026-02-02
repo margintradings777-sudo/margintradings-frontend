@@ -100,7 +100,7 @@ function Home() {
 
     try {
       const response = await axios.post(
-        `${BASE}/login/`,
+        `${BASE}/apis/v1/login/`,
         {
           Email: loginForm.Email,
           Password: loginForm.Password,
@@ -205,7 +205,7 @@ function Home() {
     }
 
     try {
-      const response = await axios.post(`${BASE}/register/`, formData, {
+      const response = await axios.post(`${BASE}/apis/v1/register/`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
