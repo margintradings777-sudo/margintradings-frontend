@@ -372,25 +372,25 @@ function Home() {
                 <label>PAN</label>
                 <input
                   type="text"
-                  name="Pan"
-                  value={registerForm.Pan}
+                  name="PAN_No"
+                  value={registerForm.PAN_No}
                   onChange={handleRegisterChange}
                   required
                 />
-                {errors.Pan && <p className="error-message">{errors.Pan}</p>}
+                {errors.PAN_No && <p className="error-message">{errors.PAN_No}</p>}
               </div>
 
               <div className="form-group">
                 <label>PAN Card Image</label>
                 <input
                   type="file"
-                  name="Pan_card_Image"
+                  name="PAN_Image"
                   onChange={handleRegisterChange}
                   accept="image/*"
                   required
                 />
-                {errors.Pan_card_Image && (
-                  <p className="error-message">{errors.Pan_card_Image}</p>
+                {errors.PAN_Image && (
+                  <p className="error-message">{errors.PAN_Image}</p>
                 )}
               </div>
 
@@ -426,14 +426,14 @@ function Home() {
                 <label>Cancel Cheque or Bank Statement</label>
                 <input
                   type="file"
-                  name="Cancel_cheque_or_bank_statement"
+                  name="Bank_Document"
                   onChange={handleRegisterChange}
                   accept="image/*,application/pdf"
                   required
                 />
-                {errors.Cancel_cheque_or_bank_statement && (
+                {errors.Bank_Document && (
                   <p className="error-message">
-                    {errors.Cancel_cheque_or_bank_statement}
+                    {errors.Bank_Document}
                   </p>
                 )}
               </div>
