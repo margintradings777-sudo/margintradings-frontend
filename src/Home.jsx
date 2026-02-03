@@ -253,8 +253,6 @@ function Home() {
     newErrors[key] = "This field is mandatory.";
     isValid = false;
   }
-});
-
 
     // Email validation
     if (
