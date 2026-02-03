@@ -8,6 +8,11 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const [withdrawAmount, setWithdrawAmount] = useState("");
+const [withdrawMsg, setWithdrawMsg] = useState("");
+const [withdrawErr, setWithdrawErr] = useState("");
+const [withdrawLoading, setWithdrawLoading] = useState(false);
+
   const [showImageModal, setShowImageModal] = useState(false);
   const [selectedImage, setSelectedImage] = useState("");
 
@@ -20,6 +25,55 @@ const Profile = () => {
     if (v === null || v === undefined || v === "") return "—";
     return String(v);
   };
+const handleWithdrawProceed = async () => {
+  setWithdrawMsg("");
+  setWithdrawErr("");
+
+  const uid = localStorage.getItem("userId");
+  const pwd = localStorage.getItem("userPassword");
+
+  if (!uid || !pwd) {
+    setWithdrawErr("Session expired. Please login again.");
+    return;
+  }
+
+  const amt = String(withdrawAmount || "").trim();
+  const num = Number(amt);
+
+  if (!amt) {
+    setWithdrawErr("Please enter amount.");
+    return;
+  }
+
+  if (Number.isNaN(num) || num <= 0) {
+    setWithdrawErr("Enter a valid amount.");
+    return;
+  }
+
+  try {
+    setWithdrawLoading(true);
+
+    const res = await api.post(`/apis/v1/withdrawal/`, {
+      user: uid,
+      password: pwd,
+      Amount: amt,
+    });
+
+    setWithdrawMsg(res?.data?.message || "Withdrawal request placed successfully.");
+    setWithdrawAmount("");
+  } catch (err) {
+    console.log("Withdraw error:", err);
+    const data = err?.response?.data;
+
+    setWithdrawErr(
+      data?.message ||
+        data?.error ||
+        "Withdrawal failed. Please try again."
+    );
+  } finally {
+    setWithdrawLoading(false);
+  }
+};
 
   const openImageModal = (imageUrl) => {
     if (!imageUrl) return;
@@ -247,6 +301,38 @@ const Profile = () => {
         </div>
       </div>
 
+      {/* Withdrawal Request Card */}
+<div style={styles.withdrawCard}>
+  <div style={styles.withdrawTitle}>WITHDRAWAL REQUEST</div>
+  <div style={styles.withdrawSub}>(Enter Amount)</div>
+
+  <div style={styles.withdrawRow}>
+    <input
+      type="number"
+      inputMode="decimal"
+      placeholder="Enter amount"
+      value={withdrawAmount}
+      onChange={(e) => setWithdrawAmount(e.target.value)}
+      style={styles.withdrawInput}
+    />
+
+    <button
+      style={{
+        ...styles.withdrawBtn,
+        opacity: withdrawLoading ? 0.7 : 1,
+        cursor: withdrawLoading ? "not-allowed" : "pointer",
+      }}
+      onClick={handleWithdrawProceed}
+      disabled={withdrawLoading}
+    >
+      {withdrawLoading ? "Processing..." : "Proceed"}
+    </button>
+  </div>
+
+  {withdrawErr ? <p style={styles.withdrawError}>{withdrawErr}</p> : null}
+  {withdrawMsg ? <p style={styles.withdrawSuccess}>{withdrawMsg}</p> : null}
+</div>
+
       <div style={styles.depositCard}>
         <div style={styles.depositTitle}>Deposit Details</div>
 
@@ -402,6 +488,58 @@ const styles = {
     fontSize: 26,
     cursor: "pointer",
   },
+  withdrawCard: {
+  background: "#fff",
+  borderRadius: 12,
+  padding: 16,
+  boxShadow: "0 4px 14px rgba(0,0,0,0.08)",
+  marginBottom: 16,
+},
+withdrawTitle: {
+  fontSize: 22,
+  fontWeight: 800,
+  color: "#1e88e5",
+  textAlign: "center",
+},
+withdrawSub: {
+  textAlign: "center",
+  color: "#666",
+  marginTop: 4,
+  marginBottom: 12,
+  fontWeight: 600,
+},
+withdrawRow: {
+  display: "flex",
+  gap: 10,
+  alignItems: "center",
+},
+withdrawInput: {
+  flex: 1,
+  padding: "12px 12px",
+  borderRadius: 10,
+  border: "1px solid #ddd",
+  fontSize: 16,
+  outline: "none",
+},
+withdrawBtn: {
+  padding: "12px 16px",
+  borderRadius: 10,
+  border: "none",
+  background: "#1e88e5",
+  color: "#fff",
+  fontSize: 16,
+  fontWeight: 700,
+},
+withdrawError: {
+  marginTop: 10,
+  color: "red",
+  fontWeight: 600,
+},
+withdrawSuccess: {
+  marginTop: 10,
+  color: "green",
+  fontWeight: 700,
+},
 };
 
 export default Profile;
