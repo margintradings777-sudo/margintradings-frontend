@@ -132,35 +132,53 @@ function Home() {
   };
 
   const handleRegisterSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    const newErrors = {};
-    let isValid = true;
+  setErrors({});
+  setFormError(null);
 
-    // Validation for mandatory fields
-    const requiredFields = [
-  "Name",
-  "Email",
-  "Password",
-  "Phone",
-  "Pan",
-  "Pan_card_Image",
-  "Account_No",
-  "IFSC_code",
-  "Cancel_cheque_or_bank_statement",
-];
+  try {
+    // ✅ FormData banao
+    const formData = new FormData();
 
-requiredFields.forEach((key) => {
-  const v = registerForm[key];
+    // IMPORTANT: file fields ko forcefully append karo
+    Object.keys(registerForm).forEach((key) => {
+      const val = registerForm[key];
 
-  // file fields
-  if (key === "Pan_card_Image" || key === "Cancel_cheque_or_bank_statement") {
-    if (!v) {
-      newErrors[key] = "This field is mandatory.";
-      isValid = false;
+      // file
+      if (val instanceof File) {
+        formData.append(key, val);
+      } else {
+        formData.append(key, val ?? "");
+      }
+    });
+
+    // ✅ Correct endpoint (same as login pattern)
+    const response = await axios.post(
+      `${BASE}/apis/v1/register/`,
+      formData,
+      { headers: { "Content-Type": "multipart/form-data" } }
+    );
+
+    alert("Registration successful!");
+    setShowRegisterModal(false);
+    console.log("REGISTER OK:", response.data);
+  } catch (error) {
+    // ✅ Backend ki exact error dikhao
+    console.log("REGISTER ERROR FULL:", error?.response?.data || error.message);
+
+    const data = error?.response?.data;
+
+    // DRF serializer errors usually object me aate hain
+    if (data && typeof data === "object") {
+      setErrors(data);
+      setFormError("Please fix highlighted fields.");
+    } else {
+      setFormError("Registration failed. Please try again.");
     }
-    return;
   }
+};
+
 
   // text fields
   if (!v || String(v).trim() === "") {
