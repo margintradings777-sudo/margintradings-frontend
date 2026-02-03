@@ -1,18 +1,21 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import api from "./api";
 import { useNavigate } from "react-router-dom";
 
 const Profile = () => {
   const [profileData, setProfileData] = useState(null);
   const [depositDetails, setDepositDetails] = useState(null);
-  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   const [showImageModal, setShowImageModal] = useState(false);
   const [selectedImage, setSelectedImage] = useState("");
 
   const navigate = useNavigate();
 
-  // helpers
+  const userId = useMemo(() => localStorage.getItem("userId"), []);
+  const userPassword = useMemo(() => localStorage.getItem("userPassword"), []);
+
   const safe = (v) => {
     if (v === null || v === undefined || v === "") return "—";
     return String(v);
@@ -29,54 +32,94 @@ const Profile = () => {
     setSelectedImage("");
   };
 
-  useEffect(() => {
-    const userId = localStorage.getItem("userId");
-    const userPassword = localStorage.getItem("userPassword");
-
-    if (!userId) {
-      navigate("/");
-      return;
-    }
-
-    if (!userPassword) {
-      // password query param required by backend profile view
-      setError("Session expired. Please login again.");
-      return;
-    }
-
-    // ✅ 1) Profile (correct endpoint + password query param)
-    api
-      .get(`/apis/v1/profile/${userId}/`, {
-        params: { password: userPassword },
-      })
-      .then((res) => setProfileData(res.data))
-      .catch((err) => {
-        console.log("Profile error:", err);
-        setError("Failed to load profile");
-      });
-
-    // ✅ 2) Deposit Account Details (correct endpoint)
-    api
-      .get(`/apis/v1/deposit-account-details/`)
-      .then((res) => setDepositDetails(res.data))
-      .catch((err) => {
-        console.log("Deposit details error:", err);
-        // optional endpoint; ignore fail
-      });
-  }, [navigate]);
-
-  const handleLogout = () => {
-    localStorage.removeItem("userName");
-    localStorage.removeItem("userId");
-    localStorage.removeItem("userPassword");
-    localStorage.removeItem("isLoggedIn");
+  const logoutHard = () => {
+    localStorage.clear();
     navigate("/");
   };
 
-  if (error) return <p style={{ padding: 16 }}>{error}</p>;
-  if (!profileData) return <p style={{ padding: 16 }}>Loading...</p>;
+  const loadAll = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      if (!userId) {
+        setError("User ID missing. Please login again.");
+        setLoading(false);
+        return;
+      }
+      if (!userPassword) {
+        setError("Session expired (password missing). Please login again.");
+        setLoading(false);
+        return;
+      }
 
-  // ✅ profile field mapping (backend me naming change hua hai multiple times, isliye fallback)
+      // ✅ Profile (GET) with password query param
+      const prof = await api.get(`/apis/v1/profile/${userId}/`, {
+        params: { password: userPassword },
+      });
+      setProfileData(prof.data);
+
+      // ✅ Deposit account details (optional)
+      try {
+        const dep = await api.get(`/apis/v1/deposit-account-details/`);
+        setDepositDetails(dep.data);
+      } catch (e) {
+        // optional: ignore
+      }
+
+      setLoading(false);
+    } catch (e) {
+      console.log("PROFILE LOAD ERROR:", e);
+      const msg =
+        e?.response?.data?.detail ||
+        e?.response?.data?.error ||
+        (Array.isArray(e?.response?.data) ? e.response.data.join(", ") : "") ||
+        e?.message ||
+        "Failed to load profile";
+      setError(msg);
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadAll();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // ----- UI states (never blank) -----
+  if (loading) {
+    return (
+      <div style={styles.page}>
+        <div style={styles.card}>
+          <h2 style={styles.title}>User Profile</h2>
+          <p style={{ padding: 8 }}>Loading…</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div style={styles.page}>
+        <div style={styles.card}>
+          <h2 style={styles.title}>User Profile</h2>
+          <p style={{ color: "crimson", padding: 8 }}>{error}</p>
+
+          <button style={styles.logout} onClick={loadAll}>
+            Retry
+          </button>
+
+          <button
+            style={{ ...styles.logout, background: "#111", marginTop: 10 }}
+            onClick={logoutHard}
+          >
+            Login Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ----- field mapping (backend keys as per your screenshot) -----
   const name = profileData?.Name || profileData?.name;
   const email = profileData?.Email || profileData?.email;
   const phone = profileData?.Phone || profileData?.phone;
@@ -90,6 +133,7 @@ const Profile = () => {
   const panImage =
     profileData?.PAN_Image ||
     profileData?.Pan_card_Image ||
+    profileData?.PANImage ||
     profileData?.pan_image;
 
   const accountNo =
@@ -98,30 +142,40 @@ const Profile = () => {
     profileData?.account_no;
 
   const ifsc =
-    profileData?.IFSC_code ||
+    profileData?.IFSC_Code ||
     profileData?.IFSC_code ||
     profileData?.IFSC ||
     profileData?.ifsc;
 
   const bankDoc =
     profileData?.Bank_Document ||
-    profileData?.Bank_Document ||
+    profileData?.Cancel_cheque_or_bank_statement ||
     profileData?.Bank_Statement;
 
   const balanceRaw = profileData?.Account_Balance ?? 0;
 
-  // ✅ deposit account details mapping (fallback)
+  // deposit details mapping
   const depBankName =
-    depositDetails?.BankName || depositDetails?.Bank_Name || depositDetails?.bank_name;
+    depositDetails?.BankName ||
+    depositDetails?.Bank_Name ||
+    depositDetails?.bank_name;
+
   const depHolderName =
-    depositDetails?.HolderName || depositDetails?.Holder_Name || depositDetails?.holder_name;
+    depositDetails?.HolderName ||
+    depositDetails?.Holder_Name ||
+    depositDetails?.holder_name;
+
   const depAccountNo =
-    depositDetails?.AccountNumber || depositDetails?.Account_No || depositDetails?.account_no;
+    depositDetails?.AccountNumber ||
+    depositDetails?.Account_No ||
+    depositDetails?.account_no;
+
   const depIFSC =
     depositDetails?.IFSC ||
-    depositDetails?.IFSC_code ||
+    depositDetails?.IFSC_Code ||
     depositDetails?.IFSC_code ||
     depositDetails?.ifsc;
+
   const depQR = depositDetails?.QR || depositDetails?.qr;
 
   return (
@@ -150,11 +204,11 @@ const Profile = () => {
         </div>
 
         <div style={styles.row}>
-          <div style={styles.label}>PAN_Image:</div>
+          <div style={styles.label}>PAN Image:</div>
           <button
             style={styles.viewBtn}
-            onClick={() => openImageModal(pan_Image)}
-            disabled={!pan_Image}
+            onClick={() => openImageModal(panImage)}
+            disabled={!panImage}
           >
             👁 View
           </button>
@@ -181,12 +235,11 @@ const Profile = () => {
           </button>
         </div>
 
-        <button style={styles.logout} onClick={handleLogout}>
+        <button style={styles.logout} onClick={logoutHard}>
           Logout
         </button>
       </div>
 
-      {/* Account Balance Card */}
       <div style={styles.balanceCard}>
         <div style={styles.balanceTitle}>Account Balance</div>
         <div style={styles.balanceValue}>
@@ -194,7 +247,6 @@ const Profile = () => {
         </div>
       </div>
 
-      {/* Deposit Details Card */}
       <div style={styles.depositCard}>
         <div style={styles.depositTitle}>Deposit Details</div>
 
@@ -230,7 +282,6 @@ const Profile = () => {
         </div>
       </div>
 
-      {/* Image Modal */}
       {showImageModal && (
         <div style={styles.modalOverlay} onClick={closeImageModal}>
           <div style={styles.modalContent} onClick={(e) => e.stopPropagation()}>
@@ -307,12 +358,7 @@ const styles = {
     border: "1px solid #d6ecff",
   },
   balanceTitle: { fontSize: 26, fontWeight: 700, color: "#1e88e5" },
-  balanceValue: {
-    fontSize: 34,
-    fontWeight: 800,
-    color: "#22a447",
-    marginTop: 10,
-  },
+  balanceValue: { fontSize: 34, fontWeight: 800, color: "#22a447", marginTop: 10 },
 
   depositCard: {
     background: "#fff",
