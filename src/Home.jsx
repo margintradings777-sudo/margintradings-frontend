@@ -17,16 +17,16 @@ function Home() {
   const [userName, setUserName] = useState("");
 
   const [registerForm, setRegisterForm] = useState({
-    Name: "",
-    Email: "",
-    Password: "",
-    Phone: "",
-    Pan: "",
-    Pan_card_Image: null,
-    Account_No: "",
-    IFSC_code: "",
-    Cancel_cheque_or_bank_statement: null,
-  });
+  Name: "",
+  Email: "",
+  Password: "",
+  Phone: "",
+  PAN_No: "",
+  PAN_Image: null,
+  Account_No: "",
+  IFSC_Code: "",
+  Bank_Document: null,
+});
 
   const [errors, setErrors] = useState({});
   const [formError, setFormError] = useState(null);
@@ -143,16 +143,16 @@ function Home() {
 
     // ✅ required fields list (same as your form)
     const requiredFields = [
-      "Name",
-      "Email",
-      "Password",
-      "Phone",
-      "Pan",
-      "Pan_card_Image",
-      "Account_No",
-      "IFSC_code",
-      "Cancel_cheque_or_bank_statement",
-    ];
+  "Name",
+  "Email",
+  "Password",
+  "Phone",
+  "PAN_No",
+  "PAN_Image",
+  "Account_No",
+  "IFSC_Code",
+  "Bank_Document",
+];
 
     const newErrors = {};
     let isValid = true;
@@ -192,20 +192,20 @@ function Home() {
       isValid = false;
     }
 
-    if (registerForm.Pan && !/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(registerForm.Pan)) {
-      newErrors.Pan = "Invalid PAN format.";
-      isValid = false;
-    }
+    if (registerForm.PAN_No && !/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(registerForm.PAN_No)) {
+  newErrors.PAN_No = "Invalid PAN format.";
+  isValid = false;
+}
 
     if (registerForm.Account_No && !/^\d+$/.test(registerForm.Account_No)) {
       newErrors.Account_No = "Account number must be numeric.";
       isValid = false;
     }
 
-    if (registerForm.IFSC_code && !/^[A-Z]{4}0[A-Z0-9]{6}$/.test(registerForm.IFSC_code)) {
-      newErrors.IFSC_code = "Invalid IFSC code format.";
-      isValid = false;
-    }
+    if (registerForm.IFSC_Code && !/^[A-Z]{4}0[A-Z0-9]{6}$/.test(registerForm.IFSC_Code)) {
+  newErrors.IFSC_Code = "Invalid IFSC code format.";
+  isValid = false;
+}
 
     if (!isValid) {
       setErrors(newErrors);
@@ -371,33 +371,31 @@ function Home() {
               </div>
 
               {/* ✅ FIX: name should be "Pan" (same as backend model) */}
-              <div className="form-group">
-                <label>PAN</label>
-                <input
-                  type="text"
-                  name="Pan"
-                  value={registerForm.Pan}
-                  onChange={handleRegisterChange}
-                  required
-                />
-                {errors.Pan && <p className="error-message">{errors.Pan}</p>}
-              </div>
-
+<div className="form-group">
+  <label>PAN</label>
+  <input
+    type="text"
+    name="PAN_No"
+    value={registerForm.PAN_No}
+    onChange={handleRegisterChange}
+    required
+  />
+  {errors.PAN_No && <p className="error-message">{errors.PAN_No}</p>}
+</div>
+              
               {/* ✅ FIX: file name should be "Pan_card_Image" */}
               <div className="form-group">
-                <label>PAN Card Image</label>
-                <input
-                  type="file"
-                  name="Pan_card_Image"
-                  onChange={handleRegisterChange}
-                  accept="image/*"
-                  required
-                />
-                {errors.Pan_card_Image && (
-                  <p className="error-message">{errors.Pan_card_Image}</p>
-                )}
-              </div>
-
+  <label>PAN Card Image</label>
+  <input
+    type="file"
+    name="PAN_Image"
+    onChange={handleRegisterChange}
+    accept="image/*"
+    required
+  />
+  {errors.PAN_Image && <p className="error-message">{errors.PAN_Image}</p>}
+</div>
+              
               <div className="form-group">
                 <label>Account Number</label>
                 <input
@@ -411,31 +409,29 @@ function Home() {
               </div>
 
               <div className="form-group">
-                <label>IFSC Code</label>
-                <input
-                  type="text"
-                  name="IFSC_code"
-                  value={registerForm.IFSC_code}
-                  onChange={handleRegisterChange}
-                  required
-                />
-                {errors.IFSC_code && <p className="error-message">{errors.IFSC_code}</p>}
-              </div>
+  <label>IFSC Code</label>
+  <input
+    type="text"
+    name="IFSC_Code"
+    value={registerForm.IFSC_Code}
+    onChange={handleRegisterChange}
+    required
+  />
+  {errors.IFSC_Code && <p className="error-message">{errors.IFSC_Code}</p>}
+</div>
 
               {/* ✅ FIX: file name should be "Cancel_cheque_or_bank_statement" */}
               <div className="form-group">
-                <label>Cancel Cheque or Bank Statement</label>
-                <input
-                  type="file"
-                  name="Cancel_cheque_or_bank_statement"
-                  onChange={handleRegisterChange}
-                  accept="image/*,application/pdf"
-                  required
-                />
-                {errors.Cancel_cheque_or_bank_statement && (
-                  <p className="error-message">{errors.Cancel_cheque_or_bank_statement}</p>
-                )}
-              </div>
+  <label>Cancel Cheque or Bank Statement</label>
+  <input
+    type="file"
+    name="Bank_Document"
+    onChange={handleRegisterChange}
+    accept="image/*,application/pdf"
+    required
+  />
+  {errors.Bank_Document && <p className="error-message">{errors.Bank_Document}</p>}
+</div>
 
               <button type="submit" className="cta-buttonFUNDS">
                 Register
