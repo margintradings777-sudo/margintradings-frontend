@@ -131,6 +131,21 @@ function Home() {
     }
   };
 
+  const handleRegisterChange = (e) => {
+  const { name, value } = e.target;
+
+  const file =
+    e.target.files && e.target.files.length > 0 ? e.target.files[0] : null;
+
+  setRegisterForm((prev) => ({
+    ...prev,
+    [name]: file ? file : value,
+  }));
+
+  // field change hote hi error clear
+  setErrors((prev) => ({ ...prev, [name]: "" }));
+};
+
   const handleRegisterSubmit = async (e) => {
   e.preventDefault();
 
@@ -138,41 +153,100 @@ function Home() {
   setFormError(null);
 
   try {
-    // ✅ FormData banao
-    const formData = new FormData();
+    // ✅ strict required field check (simple & safe)
+    const requiredFields = [
+      "Name",
+      "Email",
+      "Password",
+      "Phone",
+      "Pan",
+      "Pan_card_Image",
+      "Account_No",
+      "IFSC_code",
+      "Cancel_cheque_or_bank_statement",
+    ];
 
-    // IMPORTANT: file fields ko forcefully append karo
-    Object.keys(registerForm).forEach((key) => {
-      const val = registerForm[key];
+    const newErrors = {};
+    let isValid = true;
 
-      // file
-      if (val instanceof File) {
-        formData.append(key, val);
-      } else {
-        formData.append(key, val ?? "");
+    requiredFields.forEach((key) => {
+      const v = registerForm[key];
+
+      if (key === "Pan_card_Image" || key === "Cancel_cheque_or_bank_statement") {
+        if (!(v instanceof File)) {
+          newErrors[key] = "This field is mandatory.";
+          isValid = false;
+        }
+        return;
+      }
+
+      if (!v || String(v).trim() === "") {
+        newErrors[key] = "This field is mandatory.";
+        isValid = false;
       }
     });
 
-    // ✅ Correct endpoint (same as login pattern)
-    const response = await axios.post(
-      `${BASE}/apis/v1/register/`,
-      formData,
-      { headers: { "Content-Type": "multipart/form-data" } }
-    );
+    // extra validations (same as before)
+    if (registerForm.Email && !/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(registerForm.Email)) {
+      newErrors.Email = "Invalid email format.";
+      isValid = false;
+    }
 
+    if (registerForm.Password && registerForm.Password.length < 6) {
+      newErrors.Password = "Password must be at least 6 characters long.";
+      isValid = false;
+    }
+
+    if (registerForm.Phone && !/^\d{10}$/.test(registerForm.Phone)) {
+      newErrors.Phone = "Phone number must be 10 digits.";
+      isValid = false;
+    }
+
+    if (registerForm.Pan && !/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(registerForm.Pan)) {
+      newErrors.Pan = "Invalid PAN format.";
+      isValid = false;
+    }
+
+    if (registerForm.Account_No && !/^\d+$/.test(registerForm.Account_No)) {
+      newErrors.Account_No = "Account number must be numeric.";
+      isValid = false;
+    }
+
+    if (registerForm.IFSC_code && !/^[A-Z]{4}0[A-Z0-9]{6}$/.test(registerForm.IFSC_code)) {
+      newErrors.IFSC_code = "Invalid IFSC code format.";
+      isValid = false;
+    }
+
+    if (!isValid) {
+      setErrors(newErrors);
+      setFormError("Please correct the errors in the form.");
+      return;
+    }
+
+    // ✅ build FormData (file + text)
+    const formData = new FormData();
+    Object.keys(registerForm).forEach((key) => {
+      const val = registerForm[key];
+      formData.append(key, val instanceof File ? val : (val ?? ""));
+    });
+
+    // ✅ correct endpoint (tumhare backend ke hisaab se)
+    const res = await axios.post(`${BASE}/auth/register/`, formData, ...
+
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+
+    console.log("Registration successful:", res.data);
     alert("Registration successful!");
     setShowRegisterModal(false);
-    console.log("REGISTER OK:", response.data);
   } catch (error) {
-    // ✅ Backend ki exact error dikhao
-    console.log("REGISTER ERROR FULL:", error?.response?.data || error.message);
+    console.log("Registration failed:", error?.response?.data || error.message);
 
+    // backend errors show
     const data = error?.response?.data;
-
-    // DRF serializer errors usually object me aate hain
     if (data && typeof data === "object") {
       setErrors(data);
-      setFormError("Please fix highlighted fields.");
+      setFormError("Registration failed. Please fix the highlighted fields.");
     } else {
       setFormError("Registration failed. Please try again.");
     }
