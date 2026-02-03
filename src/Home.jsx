@@ -45,7 +45,6 @@ function Home() {
   }, []);
 
   useEffect(() => {
-    // Check if user is logged in by checking localStorage
     const storedUserName = localStorage.getItem("userName");
     const storedIsLoggedIn = localStorage.getItem("isLoggedIn");
 
@@ -65,9 +64,7 @@ function Home() {
   const additem = () => {
     axios
       .post(`${BASE}/apis/v1/withdrawal/`, item)
-      .then(() => {
-        getdata();
-      })
+      .then(() => getdata())
       .catch((err) => console.log(err));
   };
 
@@ -77,6 +74,8 @@ function Home() {
       .then((res) => SetList(res.data || []))
       .catch((err) => console.log(err));
   };
+
+  /* ================= LOGIN (same) ================= */
 
   const handleLoginChange = (e) => {
     const { name, value } = e.target;
@@ -110,10 +109,7 @@ function Home() {
 
       setShowLoginModal(false);
     } catch (error) {
-      console.error(
-        "Login failed:",
-        error.response ? error.response.data : error.message
-      );
+      console.error("Login failed:", error.response ? error.response.data : error.message);
       setLoginError(
         error.response?.data?.error ||
           error.response?.data?.message ||
@@ -123,29 +119,29 @@ function Home() {
     }
   };
 
+  /* ================= REGISTER (FIXED ONLY HERE) ================= */
+
+  // ✅ FIX: file + text handle properly + clear field error
   const handleRegisterChange = (e) => {
-  const { name, value } = e.target;
+    const { name, value, files } = e.target;
 
-  const file =
-    e.target.files && e.target.files.length > 0 ? e.target.files[0] : null;
+    setRegisterForm((prevForm) => ({
+      ...prevForm,
+      [name]: files && files.length > 0 ? files[0] : value,
+    }));
 
-  setRegisterForm((prev) => ({
-    ...prev,
-    [name]: file ? file : value,
-  }));
+    // clear error on change
+    setErrors((prev) => ({ ...prev, [name]: "" }));
+  };
 
-  // field change hote hi error clear
-  setErrors((prev) => ({ ...prev, [name]: "" }));
-};
-
+  // ✅ FIX: remove duplicate/old broken code, only one clean submit
   const handleRegisterSubmit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  setErrors({});
-  setFormError(null);
+    setErrors({});
+    setFormError(null);
 
-  try {
-    // ✅ strict required field check (simple & safe)
+    // ✅ required fields list (same as your form)
     const requiredFields = [
       "Name",
       "Email",
@@ -164,6 +160,7 @@ function Home() {
     requiredFields.forEach((key) => {
       const v = registerForm[key];
 
+      // file fields
       if (key === "Pan_card_Image" || key === "Cancel_cheque_or_bank_statement") {
         if (!(v instanceof File)) {
           newErrors[key] = "This field is mandatory.";
@@ -172,13 +169,14 @@ function Home() {
         return;
       }
 
+      // text fields
       if (!v || String(v).trim() === "") {
         newErrors[key] = "This field is mandatory.";
         isValid = false;
       }
     });
 
-    // extra validations (same as before)
+    // extra validations (your old validations kept)
     if (registerForm.Email && !/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(registerForm.Email)) {
       newErrors.Email = "Invalid email format.";
       isValid = false;
@@ -215,126 +213,31 @@ function Home() {
       return;
     }
 
-    // ✅ build FormData (file + text)
-    const formData = new FormData();
-    Object.keys(registerForm).forEach((key) => {
-      const val = registerForm[key];
-      formData.append(key, val instanceof File ? val : (val ?? ""));
-    });
-
-    // ✅ correct endpoint (tumhare backend ke hisaab se)
-    const res = await axios.post(
-  `${BASE}/auth/register/`,
-  formData,
-  {
-    headers: { "Content-Type": "multipart/form-data" },
-  }
-);
-
-
-    console.log("Registration successful:", res.data);
-    alert("Registration successful!");
-    setShowRegisterModal(false);
-  } catch (error) {
-    console.log("Registration failed:", error?.response?.data || error.message);
-
-    // backend errors show
-    const data = error?.response?.data;
-    if (data && typeof data === "object") {
-      setErrors(data);
-      setFormError("Registration failed. Please fix the highlighted fields.");
-    } else {
-      setFormError("Registration failed. Please try again.");
-    }
-
-
-  // text fields
-  if (!v || String(v).trim() === "") {
-    newErrors[key] = "This field is mandatory.";
-    isValid = false;
-  }
-
-    // Email validation
-    if (
-      registerForm.Email &&
-      !/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(registerForm.Email)
-    ) {
-      newErrors.Email = "Invalid email format.";
-      isValid = false;
-    }
-
-    // Password strength (example: at least 6 characters)
-    if (registerForm.Password && registerForm.Password.length < 6) {
-      newErrors.Password = "Password must be at least 6 characters long.";
-      isValid = false;
-    }
-
-    // Phone number validation (example: 10 digits)
-    if (registerForm.Phone && !/^\d{10}$/.test(registerForm.Phone)) {
-      newErrors.Phone = "Phone number must be 10 digits.";
-      isValid = false;
-    }
-
-    // PAN validation (example: 10 alphanumeric characters)
-    if (
-      registerForm.Pan &&
-      !/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(registerForm.Pan)
-    ) {
-      newErrors.Pan = "Invalid PAN format.";
-      isValid = false;
-    }
-
-    // Account Number validation (example: numeric)
-    if (registerForm.Account_No && !/^\d+$/.test(registerForm.Account_No)) {
-      newErrors.Account_No = "Account number must be numeric.";
-      isValid = false;
-    }
-
-    // IFSC Code validation (example: 11 alphanumeric characters)
-    if (
-      registerForm.IFSC_code &&
-      !/^[A-Z]{4}0[A-Z0-9]{6}$/.test(registerForm.IFSC_code)
-    ) {
-      newErrors.IFSC_code = "Invalid IFSC code format.";
-      isValid = false;
-    }
-
-    setErrors(newErrors);
-
-    if (!isValid) {
-      setFormError("Please correct the errors in the form.");
-      return;
-    }
-
-    setFormError(null);
-
-    const formData = new FormData();
-    for (const key in registerForm) {
-      formData.append(key, registerForm[key]);
-    }
-
     try {
-      const response = await axios.post(`${BASE}/apis/v1/register/`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+      // ✅ FormData build (file + text)
+      const formData = new FormData();
+      Object.keys(registerForm).forEach((key) => {
+        const val = registerForm[key];
+        formData.append(key, val instanceof File ? val : (val ?? ""));
       });
 
-      console.log("Registration successful:", response.data);
-      setFormError(null);
+      // ✅ correct endpoint (tumhara backend currently use kar raha: /apis/v1/register/)
+      const res = await axios.post(`${BASE}/apis/v1/register/`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      console.log("Registration successful:", res.data);
       alert("Registration successful!");
-      setShowRegisterModal(false); // Close modal on success
+      setShowRegisterModal(false);
     } catch (error) {
-      console.error(
-        "Registration failed:",
-        error.response ? error.response.data : error.message
-      );
+      console.error("Registration failed:", error.response ? error.response.data : error.message);
       setFormError(
-        error.response?.data?.message ||
-          "Registration failed. Please try again."
+        error.response?.data?.message || "Registration failed. Please try again."
       );
     }
   };
+
+  /* ================= UI (same as your full code) ================= */
 
   return (
     <div>
@@ -352,16 +255,10 @@ function Home() {
             </div>
           ) : (
             <>
-              <button
-                className="btn green"
-                onClick={() => setShowRegisterModal(true)}
-              >
+              <button className="btn green" onClick={() => setShowRegisterModal(true)}>
                 OPEN ACCOUNT
               </button>
-              <button
-                className="btn outline"
-                onClick={() => setShowLoginModal(true)}
-              >
+              <button className="btn outline" onClick={() => setShowLoginModal(true)}>
                 LOG IN
               </button>
             </>
@@ -413,14 +310,12 @@ function Home() {
         </div>
       </section>
 
+      {/* REGISTER MODAL */}
       {showRegisterModal && (
         <div className="modal-overlay">
           <div className="modal-content">
             <h2>Register Account</h2>
-            <button
-              className="close-button"
-              onClick={() => setShowRegisterModal(false)}
-            >
+            <button className="close-button" onClick={() => setShowRegisterModal(false)}>
               &times;
             </button>
 
@@ -460,9 +355,7 @@ function Home() {
                   onChange={handleRegisterChange}
                   required
                 />
-                {errors.Password && (
-                  <p className="error-message">{errors.Password}</p>
-                )}
+                {errors.Password && <p className="error-message">{errors.Password}</p>}
               </div>
 
               <div className="form-group">
@@ -477,29 +370,31 @@ function Home() {
                 {errors.Phone && <p className="error-message">{errors.Phone}</p>}
               </div>
 
+              {/* ✅ FIX: name should be "Pan" (same as backend model) */}
               <div className="form-group">
                 <label>PAN</label>
                 <input
                   type="text"
-                  name="PAN_No"
-                  value={registerForm.PAN_No}
+                  name="Pan"
+                  value={registerForm.Pan}
                   onChange={handleRegisterChange}
                   required
                 />
-                {errors.PAN_No && <p className="error-message">{errors.PAN_No}</p>}
+                {errors.Pan && <p className="error-message">{errors.Pan}</p>}
               </div>
 
+              {/* ✅ FIX: file name should be "Pan_card_Image" */}
               <div className="form-group">
                 <label>PAN Card Image</label>
                 <input
                   type="file"
-                  name="PAN_Image"
+                  name="Pan_card_Image"
                   onChange={handleRegisterChange}
                   accept="image/*"
                   required
                 />
-                {errors.PAN_Image && (
-                  <p className="error-message">{errors.PAN_Image}</p>
+                {errors.Pan_card_Image && (
+                  <p className="error-message">{errors.Pan_card_Image}</p>
                 )}
               </div>
 
@@ -512,9 +407,7 @@ function Home() {
                   onChange={handleRegisterChange}
                   required
                 />
-                {errors.Account_No && (
-                  <p className="error-message">{errors.Account_No}</p>
-                )}
+                {errors.Account_No && <p className="error-message">{errors.Account_No}</p>}
               </div>
 
               <div className="form-group">
@@ -526,24 +419,21 @@ function Home() {
                   onChange={handleRegisterChange}
                   required
                 />
-                {errors.IFSC_code && (
-                  <p className="error-message">{errors.IFSC_code}</p>
-                )}
+                {errors.IFSC_code && <p className="error-message">{errors.IFSC_code}</p>}
               </div>
 
+              {/* ✅ FIX: file name should be "Cancel_cheque_or_bank_statement" */}
               <div className="form-group">
                 <label>Cancel Cheque or Bank Statement</label>
                 <input
                   type="file"
-                  name="Bank_Document"
+                  name="Cancel_cheque_or_bank_statement"
                   onChange={handleRegisterChange}
                   accept="image/*,application/pdf"
                   required
                 />
-                {errors.Bank_Document && (
-                  <p className="error-message">
-                    {errors.Bank_Document}
-                  </p>
+                {errors.Cancel_cheque_or_bank_statement && (
+                  <p className="error-message">{errors.Cancel_cheque_or_bank_statement}</p>
                 )}
               </div>
 
@@ -555,14 +445,12 @@ function Home() {
         </div>
       )}
 
+      {/* LOGIN MODAL */}
       {showLoginModal && (
         <div className="modal-overlay">
           <div className="modal-content">
             <h2>Login</h2>
-            <button
-              className="close-button"
-              onClick={() => setShowLoginModal(false)}
-            >
+            <button className="close-button" onClick={() => setShowLoginModal(false)}>
               &times;
             </button>
 
@@ -598,6 +486,8 @@ function Home() {
           </div>
         </div>
       )}
+
+      {/* 👇👇👇 REST OF YOUR PAGE SAME (unchanged) 👇👇👇 */}
 
       <div className="container1">
         <div className="box1">
@@ -698,8 +588,7 @@ function Home() {
             <h4>Step 2</h4>
             <h2>CHOOSE PREFERRED PAYMENT METHOD</h2>
             <p>
-              Click the <span>Deposit</span> button to view both global and
-              local ways to deposit.
+              Click the <span>Deposit</span> button to view both global and local ways to deposit.
             </p>
 
             <div className="nav-dots">
@@ -735,8 +624,7 @@ function Home() {
         </div>
         <div className="conditions-right">
           <p>
-            Order execution from 0.01 seconds. Floating spreads from 0.7 pips.
-            Demo and Swap Free options available.
+            Order execution from 0.01 seconds. Floating spreads from 0.7 pips. Demo and Swap Free options available.
           </p>
           <div className="features-grid">
             <div className="feature">
@@ -775,26 +663,21 @@ function Home() {
             <div className="faq-question">How does FBS secure my funds?</div>
             <div className="faq-icon">+</div>
             <div className="faq-answer">
-              FBS secures your funds through segregated accounts and
-              industry-standard encryption protocols.
+              FBS secures your funds through segregated accounts and industry-standard encryption protocols.
             </div>
           </div>
-
           <div className="faq-item">
             <div className="faq-question">How do I deposit funds?</div>
             <div className="faq-icon">+</div>
             <div className="faq-answer">
-              You can deposit funds using bank transfer, credit/debit cards, or
-              e-wallets in your client area.
+              You can deposit funds using bank transfer, credit/debit cards, or e-wallets in your client area.
             </div>
           </div>
-
           <div className="faq-item">
             <div className="faq-question">How do I withdraw funds?</div>
             <div className="faq-icon">+</div>
             <div className="faq-answer">
-              Withdrawals can be requested via your dashboard using the same
-              method as your deposit.
+              Withdrawals can be requested via your dashboard using the same method as your deposit.
             </div>
           </div>
         </div>
@@ -811,7 +694,6 @@ function Home() {
               <i className="fab fa-telegram-plane"></i>
             </div>
           </div>
-
           <div className="contact-us">
             <strong>Contact us</strong>
             <div className="contact-icons">
@@ -820,7 +702,6 @@ function Home() {
               <i className="fab fa-whatsapp"></i>
             </div>
           </div>
-
           <a href="#" className="google-play-btn">
             <i className="fab fa-google-play"></i> Get on the Google Play
           </a>
@@ -836,7 +717,6 @@ function Home() {
             <a href="#">MetaTrader 4</a>
             <a href="#">Open a Forex account</a>
           </div>
-
           <div>
             <h4>Market</h4>
             <a href="#">Forex</a>
@@ -846,28 +726,24 @@ function Home() {
             <a href="#">Stocks</a>
             <a href="#">Forex Exotic</a>
           </div>
-
           <div>
             <h4>Tools</h4>
             <a href="#">Economic calendar</a>
             <a href="#">Trading calculators</a>
             <a href="#">VPS</a>
           </div>
-
           <div>
             <h4>Analytics</h4>
             <a href="#">Market Analytics</a>
             <a href="#">VIP Analytics</a>
             <a href="#">Top trades of the hour</a>
           </div>
-
           <div>
             <h4>Education</h4>
             <a href="#">FBS Academy</a>
             <a href="#">Trader's blog</a>
             <a href="#">Glossary</a>
           </div>
-
           <div>
             <h4>Company</h4>
             <a href="#">About FBS</a>
@@ -879,7 +755,6 @@ function Home() {
             <a href="#">Callback</a>
             <a href="#">Help Center</a>
           </div>
-
           <div>
             <h4>Address</h4>
             <p>Sky City at Borivali, E Block 808,</p>
