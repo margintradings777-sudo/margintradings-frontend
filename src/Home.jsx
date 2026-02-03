@@ -138,12 +138,37 @@ function Home() {
     let isValid = true;
 
     // Validation for mandatory fields
-    for (const key in registerForm) {
-      if (registerForm[key] === "" || registerForm[key] === null) {
-        newErrors[key] = "This field is mandatory.";
-        isValid = false;
-      }
+    const requiredFields = [
+  "Name",
+  "Email",
+  "Password",
+  "Phone",
+  "Pan",
+  "Pan_card_Image",
+  "Account_No",
+  "IFSC_code",
+  "Cancel_cheque_or_bank_statement",
+];
+
+requiredFields.forEach((key) => {
+  const v = registerForm[key];
+
+  // file fields
+  if (key === "Pan_card_Image" || key === "Cancel_cheque_or_bank_statement") {
+    if (!v) {
+      newErrors[key] = "This field is mandatory.";
+      isValid = false;
     }
+    return;
+  }
+
+  // text fields
+  if (!v || String(v).trim() === "") {
+    newErrors[key] = "This field is mandatory.";
+    isValid = false;
+  }
+});
+
 
     // Email validation
     if (
