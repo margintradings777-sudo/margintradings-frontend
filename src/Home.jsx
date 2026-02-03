@@ -246,8 +246,6 @@ function Home() {
     } else {
       setFormError("Registration failed. Please try again.");
     }
-  }
-};
 
 
   // text fields
