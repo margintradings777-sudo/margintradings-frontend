@@ -78,14 +78,6 @@ function Home() {
       .catch((err) => console.log(err));
   };
 
-  const handleRegisterChange = (e) => {
-    const { name, value, files } = e.target;
-    setRegisterForm((prevForm) => ({
-      ...prevForm,
-      [name]: files ? files[0] : value,
-    }));
-  };
-
   const handleLoginChange = (e) => {
     const { name, value } = e.target;
     setLoginForm((prevForm) => ({
@@ -231,10 +223,14 @@ function Home() {
     });
 
     // ✅ correct endpoint (tumhare backend ke hisaab se)
-    const res = await axios.post(`${BASE}/auth/register/`, formData, ...
+    const res = await axios.post(
+  `${BASE}/auth/register/`,
+  formData,
+  {
+    headers: { "Content-Type": "multipart/form-data" },
+  }
+);
 
-      headers: { "Content-Type": "multipart/form-data" },
-    });
 
     console.log("Registration successful:", res.data);
     alert("Registration successful!");
